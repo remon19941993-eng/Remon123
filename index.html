@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>لوحة التحكم — ريمون</title>
+  <script src="config.js"></script>
+  <style>
+    :root {
+      --bg: #0f0f12;
+      --card: #1a1a22;
+      --border: #2a2a35;
+      --text: #e8e8ed;
+      --muted: #8888a0;
+      --accent: #6c5ce7;
+      --accent-hover: #5a4bd1;
+      --danger: #e74c3c;
+      --success: #2ecc71;
+      --warning: #f39c12;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+    .container { max-width: 960px; margin: 0 auto; padding: 24px 16px; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    h1, h2 { margin-bottom: 12px; }
+    h1 { font-size: 1.5rem; }
+    h2 { font-size: 1.15rem; color: var(--muted); }
+    label { display: block; margin-bottom: 6px; color: var(--muted); font-size: 0.9rem; }
+    input[type="password"], input[type="text"] {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: #121218;
+      color: var(--text);
+      font-size: 1rem;
+      margin-bottom: 14px;
+    }
+    input:focus { outline: none; border-color: var(--accent); }
+    button, .btn {
+      display: inline-block;
+      padding: 10px 20px;
+      border-radius: 8px;
+      border: none;
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover, .btn:hover { background: var(--accent-hover); }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-danger { background: var(--danger); }
+    .btn-danger:hover { background: #c0392b; }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+    .msg {
+      padding: 10px 14px;
+      border-radius: 8px;
+      margin-bottom: 14px;
+      font-size: 0.9rem;
+    }
+    .msg-error { background: rgba(231,76,60,0.15); color: #ff8a7a; border: 1px solid rgba(231,76,60,0.3); }
+    .msg-success { background: rgba(46,204,113,0.15); color: #7ddea0; border: 1px solid rgba(46,204,113,0.3); }
+    .msg-info { background: rgba(108,92,231,0.12); color: #a29bfe; border: 1px solid rgba(108,92,231,0.3); }
+    .hidden { display: none !important; }
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .tab {
+      padding: 8px 16px;
+      border-radius: 8px;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      cursor: pointer;
+    }
+    .tab.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      background: rgba(108,92,231,0.2);
+      color: #a29bfe;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+    th, td {
+      padding: 10px 12px;
+      text-align: right;
+      border-bottom: 1px solid var(--border);
+    }
+    th { color: var(--muted); font-weight: 500; }
+    .feature-list {
+      list-style: none;
+    }
+    .feature-list li {
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .feature-list li:last-child { border-bottom: none; }
+    .feature-list .val { color: var(--success); font-family: monospace; }
+    #lockTimer { font-weight: bold; color: var(--warning); }
+    .code-box {
+      background: #121218;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
+      font-family: monospace;
+      font-size: 0.85rem;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      direction: ltr;
+      text-align: left;
+      margin: 12px 0;
+    }
+  </style>
+</head>
+<body>
+  <!-- شاشة الدخول -->
+  <div id="loginScreen" class="container" style="max-width:420px; padding-top:60px;">
+    <div class="card">
+      <h1>🔐 لوحة التحكم</h1>
+      <p style="color:var(--muted); margin-bottom:20px; font-size:0.9rem;">ريمون — سوق التجار</p>
+      <div id="loginMsg" class="hidden"></div>
+      <div id="lockBox" class="hidden msg msg-error">
+        تم قفل الدخول مؤقتاً بسبب محاولات خاطئة.<br>
+        انتظر <span id="lockTimer">60</span> ثانية
+      </div>
+      <form id="loginForm">
+        <label for="password">كلمة المرور</label>
+        <input type="password" id="password" autocomplete="current-password" required placeholder="أدخل كلمة المرور" />
+        <button type="submit" id="loginBtn" style="width:100%;">دخول</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- لوحة التحكم -->
+  <div id="adminScreen" class="container hidden">
+    <div class="header">
+      <div>
+        <h1>لوحة التحكم <span class="badge">ريمون</span></h1>
+        <p style="color:var(--muted); font-size:0.85rem;">جلسة محدودة • تنتهي بعد ساعتين أو عند الخروج</p>
+      </div>
+      <button class="btn-outline" id="logoutBtn">خروج</button>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="dashboard">الرئيسية</button>
+      <button class="tab" data-tab="security">الأمان</button>
+      <button class="tab" data-tab="info">معلومات</button>
+    </div>
+
+    <!-- تبويب الرئيسية -->
+    <div id="tab-dashboard" class="tab-content">
+      <div class="card">
+        <h2>مرحباً بك في لوحة التحكم</h2>
+        <p style="color:var(--muted); margin-bottom:16px;">
+          هذه لوحة إدارة بسيطة لمشروع ريمون. يمكنك تغيير كلمة المرور من تبويب «الأمان».
+        </p>
+        <ul class="feature-list">
+          <li><span>الحماية</span><span class="val">SHA-256</span></li>
+          <li><span>قفل مؤقت</span><span class="val">بعد 5 محاولات خاطئة</span></li>
+          <li><span>مدة الجلسة</span><span class="val">ساعتان</span></li>
+          <li><span>إخفاء عن محركات البحث</span><span class="val">noindex</span></li>
+        </ul>
+      </div>
+      <div class="card">
+        <h2>روابط سريعة</h2>
+        <p style="margin-top:8px;">
+          <a href="/" class="btn btn-outline" style="text-decoration:none; margin-left:8px;">الموقع الرئيسي</a>
+          <a href="/admin" class="btn btn-outline" style="text-decoration:none;">هذه الصفحة</a>
+        </p>
+      </div>
+    </div>
+
+    <!-- تبويب الأمان -->
+    <div id="tab-security" class="tab-content hidden">
+      <div class="card">
+        <h2>تغيير كلمة المرور</h2>
+        <p style="color:var(--muted); font-size:0.9rem; margin-bottom:16px;">
+          بعد التغيير سيتم توليد ملف <code>config.js</code> جديد. نزّله وارفعه إلى مجلد <code>admin/</code> في مشروع Vercel ثم أعد النشر.
+        </p>
+        <div id="securityMsg" class="hidden"></div>
+        <label for="newPass">كلمة المرور الجديدة</label>
+        <input type="password" id="newPass" placeholder="كلمة مرور قوية" />
+        <label for="confirmPass">تأكيد كلمة المرور</label>
+        <input type="password" id="confirmPass" placeholder="أعد الكتابة" />
+        <button id="changePassBtn">تغيير وحفظ</button>
+      </div>
+      <div class="card hidden" id="downloadBox">
+        <h2>ملف config.js الجديد</h2>
+        <p style="color:var(--muted); font-size:0.9rem; margin-bottom:8px;">انسخ المحتوى أو نزّل الملف وارفعه إلى Vercel:</p>
+        <div class="code-box" id="configPreview"></div>
+        <button id="downloadConfigBtn" class="btn">⬇ تنزيل config.js</button>
+      </div>
+    </div>
+
+    <!-- تبويب معلومات -->
+    <div id="tab-info" class="tab-content hidden">
+      <div class="card">
+        <h2>ميزات الأمان المفعّلة</h2>
+        <ul class="feature-list">
+          <li>
+            <span>كلمة المرور تُحفظ كبصمة SHA-256 (ليست نصاً واضحاً في الملفات)</span>
+            <span class="val">✓</span>
+          </li>
+          <li>
+            <span>بعد 5 محاولات خاطئة يُقفل الدخول دقيقة</span>
+            <span class="val">✓</span>
+          </li>
+          <li>
+            <span>جلسة محدودة تنتهي بعد ساعتين أو عند الضغط على «خروج»</span>
+            <span class="val">✓</span>
+          </li>
+          <li>
+            <span>/admin حتى لا تُفهرس (noindex)</span>
+            <span class="val">✓</span>
+          </li>
+        </ul>
+      </div>
+      <div class="card">
+        <h2>ملاحظات مهمة</h2>
+        <p style="color:var(--muted); font-size:0.9rem;">
+          • هذه الحماية مناسبة للوحة إدارة بسيطة. لا تضع بيانات حساسة جداً بدون خادم خلفي (Backend).<br>
+          • غيّر كلمة المرور الافتراضية فوراً بعد أول دخول.<br>
+          • ارفع محتوى الحزمة إلى مشروع remonl على Vercel، ثم افتح /admin وجرّب الدخول.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const cfg = window.ADMIN_CONFIG || {
+      passwordHash: "f5ddee62967097e87077b0763c53bb2a5a43dc2ab093bdbfe39fe06b6c6d1aca",
+      maxAttempts: 5,
+      lockMinutes: 1,
+      sessionHours: 2
+    };
+
+    const SESSION_KEY = "remon_admin_session";
+    const ATTEMPTS_KEY = "remon_admin_attempts";
+    const LOCK_KEY = "remon_admin_lock";
+
+    async function sha256(text) {
+      const enc = new TextEncoder().encode(text);
+      const buf = await crypto.subtle.digest("SHA-256", enc);
+      return Array.from(new Uint8Array(buf))
+        .map(b => b.toString(16).padStart(2, "0"))
+        .join("");
+    }
+
+    function getAttempts() {
+      return parseInt(localStorage.getItem(ATTEMPTS_KEY) || "0", 10);
+    }
+    function setAttempts(n) {
+      localStorage.setItem(ATTEMPTS_KEY, String(n));
+    }
+    function getLockUntil() {
+      return parseInt(localStorage.getItem(LOCK_KEY) || "0", 10);
+    }
+    function setLock(minutes) {
+      localStorage.setItem(LOCK_KEY, String(Date.now() + minutes * 60 * 1000));
+    }
+    function clearLock() {
+      localStorage.removeItem(LOCK_KEY);
+      localStorage.removeItem(ATTEMPTS_KEY);
+    }
+
+    function isLocked() {
+      return Date.now() < getLockUntil();
+    }
+
+    function startSession() {
+      const exp = Date.now() + cfg.sessionHours * 60 * 60 * 1000;
+      localStorage.setItem(SESSION_KEY, String(exp));
+      clearLock();
+    }
+    function clearSession() {
+      localStorage.removeItem(SESSION_KEY);
+    }
+    function isSessionValid() {
+      const exp = parseInt(localStorage.getItem(SESSION_KEY) || "0", 10);
+      return Date.now() < exp;
+    }
+
+    function showMsg(el, text, type) {
+      el.className = "msg msg-" + type;
+      el.textContent = text;
+      el.classList.remove("hidden");
+    }
+
+    function updateLockUI() {
+      const lockBox = document.getElementById("lockBox");
+      const loginForm = document.getElementById("loginForm");
+      const timerEl = document.getElementById("lockTimer");
+      if (isLocked()) {
+        lockBox.classList.remove("hidden");
+        loginForm.classList.add("hidden");
+        const left = Math.ceil((getLockUntil() - Date.now()) / 1000);
+        timerEl.textContent = left;
+        if (left <= 0) {
+          clearLock();
+          lockBox.classList.add("hidden");
+          loginForm.classList.remove("hidden");
+        } else {
+          setTimeout(updateLockUI, 1000);
+        }
+      } else {
+        lockBox.classList.add("hidden");
+        loginForm.classList.remove("hidden");
+      }
+    }
+
+    function showLogin() {
+      document.getElementById("loginScreen").classList.remove("hidden");
+      document.getElementById("adminScreen").classList.add("hidden");
+      updateLockUI();
+    }
+
+    function showAdmin() {
+      document.getElementById("loginScreen").classList.add("hidden");
+      document.getElementById("adminScreen").classList.remove("hidden");
+    }
+
+    // Tabs
+    document.querySelectorAll(".tab").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+        document.querySelectorAll(".tab-content").forEach(c => c.classList.add("hidden"));
+        btn.classList.add("active");
+        document.getElementById("tab-" + btn.dataset.tab).classList.remove("hidden");
+      });
+    });
+
+    // Login
+    document.getElementById("loginForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (isLocked()) return;
+
+      const pass = document.getElementById("password").value;
+      const hash = await sha256(pass);
+      const msgEl = document.getElementById("loginMsg");
+
+      if (hash === cfg.passwordHash) {
+        startSession();
+        showAdmin();
+        document.getElementById("password").value = "";
+        msgEl.classList.add("hidden");
+      } else {
+        let att = getAttempts() + 1;
+        setAttempts(att);
+        if (att >= cfg.maxAttempts) {
+          setLock(cfg.lockMinutes);
+          setAttempts(0);
+          updateLockUI();
+          showMsg(msgEl, "تم تجاوز عدد المحاولات. الدخول مقفل مؤقتاً.", "error");
+        } else {
+          showMsg(msgEl, `كلمة مرور خاطئة. المحاولات المتبقية: ${cfg.maxAttempts - att}`, "error");
+        }
+      }
+    });
+
+    // Logout
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+      clearSession();
+      showLogin();
+    });
+
+    // Change password
+    document.getElementById("changePassBtn").addEventListener("click", async () => {
+      const p1 = document.getElementById("newPass").value;
+      const p2 = document.getElementById("confirmPass").value;
+      const msgEl = document.getElementById("securityMsg");
+
+      if (!p1 || p1.length < 6) {
+        showMsg(msgEl, "كلمة المرور يجب أن تكون 6 أحرف على الأقل.", "error");
+        return;
+      }
+      if (p1 !== p2) {
+        showMsg(msgEl, "كلمتا المرور غير متطابقتين.", "error");
+        return;
+      }
+
+      const newHash = await sha256(p1);
+      const content = `// إعدادات الأمان — لا تضع كلمة المرور كنص واضح هنا
+// غيّر كلمة المرور من تبويب «الأمان» داخل اللوحة ثم نزّل هذا الملف وارفعه إلى Vercel
+window.ADMIN_CONFIG = {
+  // SHA-256 لكلمة المرور الجديدة
+  passwordHash: "${newHash}",
+  maxAttempts: 5,
+  lockMinutes: 1,
+  sessionHours: 2
+};
+`;
+      document.getElementById("configPreview").textContent = content;
+      document.getElementById("downloadBox").classList.remove("hidden");
+      showMsg(msgEl, "تم توليد الملف. نزّله الآن وارفعه إلى مجلد admin/ على Vercel ثم أعد النشر.", "success");
+
+      // حفظ مؤقت في الجلسة الحالية فقط (لن يبقى بعد إعادة النشر بدون رفع الملف)
+      cfg.passwordHash = newHash;
+
+      window._pendingConfig = content;
+    });
+
+    document.getElementById("downloadConfigBtn").addEventListener("click", () => {
+      const blob = new Blob([window._pendingConfig || ""], { type: "application/javascript" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "config.js";
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
+
+    // Init
+    if (isSessionValid()) {
+      showAdmin();
+    } else {
+      clearSession();
+      showLogin();
+    }
+  </script>
+</body>
+</html>
